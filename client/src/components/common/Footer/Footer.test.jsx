@@ -1,9 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { render } from '@testing-library/react';
 import Footer from '.';
 
-it('[Footer]renders without crashing', () => {
-  const div = document.createElement('div');
-  ReactDOM.render(<Footer />, div);
-  ReactDOM.unmountComponentAtNode(div);
+describe('Footer component', () => {
+  it('matches with the snapshot', () => {
+    const { getByText } = render(<Footer />);
+    const footer = getByText(/^Copy/);
+    expect(footer).toMatchSnapshot();
+  });
 });

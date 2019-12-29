@@ -1,6 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
+import './index.scss';
+import Root from './Root';
+import * as workerSetup from './util/workerSetup';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<Root />, document.getElementById('root'));
+
+workerSetup.isExistRegistration().then((isEixst) => {
+  const workerAction = isEixst ? workerSetup.updater : workerSetup.register;
+  workerAction();
+});

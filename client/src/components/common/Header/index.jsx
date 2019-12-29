@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  SideBarContext,
+  SideBarActionCreator,
+} from '../../../contexts/SideBar';
 import './Header.scss';
-import logo from '../../../assets/images/quickkick-logo.png';
+import './hamburger.css';
 
 const Header = () => (
   <div className="header">
@@ -8,36 +13,45 @@ const Header = () => (
       <ServiceLogo />
     </div>
     <div className="header__right">
-      <NavBar />
+      <HamburgerBtn />
     </div>
   </div>
 );
 
-const ServiceLogo = () => <img className="logo" src={logo} alt="퀵킥 로고" />;
-
-const NavBar = () => {
-  const [isLogin, setIsLogin] = useState(false);
-
-  useEffect(() => {
-    const cookie = document.cookie.split('=')[1];
-    setIsLogin(cookie === 'true');
-  }, []);
-
+const ServiceLogo = () => {
+  const { sideBarState, sideBarDispatch } = useContext(SideBarContext);
+  const handleCloseSideBar = () => {
+    if (sideBarState.activated)
+      sideBarDispatch(SideBarActionCreator.toggleActivated());
+  };
   return (
-    <nav className="nav-bar">
-      <div className="nav-bar__button">Quick Match</div>
-      <div className="nav-bar__button">Quick Team</div>
-      {isLogin ? <UserIcon /> : <LoginBtn />}
-    </nav>
+    <Link to="/" onClick={handleCloseSideBar}>
+      <span className="pointChar">Q</span>uick
+      <span className="pointChar">K</span>
+      ick
+    </Link>
   );
 };
 
-const LoginBtn = () => (
-  <div className="nav-bar__userInfo">
-    <a href="http://127.0.0.1:4000/auth/naver">로그인</a>
-  </div>
-);
-
-const UserIcon = () => <div className="nav-bar__userInfo">로그아웃</div>;
+export const HamburgerBtn = () => {
+  const [openState, setOpenState] = useState('');
+  const { sideBarDispatch } = useContext(SideBarContext);
+  const hamClickHandler = () => {
+    const newValue = openState === 'is-active' ? '' : 'is-active';
+    setOpenState(newValue);
+    sideBarDispatch(SideBarActionCreator.toggleActivated());
+  };
+  return (
+    <button
+      onClick={hamClickHandler}
+      className={`hamburger ${openState}`}
+      type="button"
+    >
+      <span className="hamburger-box">
+        <span className="hamburger-inner" />
+      </span>
+    </button>
+  );
+};
 
 export default Header;

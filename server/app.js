@@ -1,4 +1,6 @@
-require('dotenv').config();
+require('dotenv').config({
+  path: `.env.${process.env.NODE_ENV}`,
+});
 const express = require('express');
 const { GraphQLServer } = require('graphql-yoga');
 const path = require('path');
@@ -10,17 +12,20 @@ const passport = require('./middlewares/passport');
 const authRouter = require('./routes/auth');
 const errorRouter = require('./routes/error');
 const createError = require('./middlewares/createError');
-
+const userRouter = require('./routes/user');
+const myteamRouter = require('./routes/myteam');
+const mapRouter = require('./routes/map');
+const notificationRouter = require('./routes/notification');
+const cors = require('cors');
 const server = new GraphQLServer({
   typeDefs: './schema.graphql',
   resolvers,
-  context: { prisma }
+  context: { prisma },
 });
 
 const app = server.express;
 
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.use(cors());
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -31,19 +36,24 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize());
 
 app.use('/auth', authRouter);
+app.use('/user', userRouter);
+app.use('/myteam', myteamRouter);
+app.use('/map', mapRouter);
+app.use('/notification', notificationRouter);
 
-server.express.get('/', (req, res, next)=>{
-  return res.send('hello');
-});
-server.express.use('/auth', (req, res, next) => {
-  return res.send('ok');
-});
+server.start(
+  {
+    port: 4000,
+    endpoint: '/graphql',
+    playground:
+      process.env.NODE_ENV === 'development'
+        ? process.env.GRAPHQL_PLAYGROUND
+        : false,
+  },
+  ({ port }) => console.log(`QuickKick API Server is opened on ${port}`)
+);
 
-server.start({
-  port: 4000,
-  endpoint: '/graphql',
-  playground: '/playground',
-},({ port })=> console.log(`${port} open`));
+//app.use(createError);
+//app.use(errorRouter);
 
-app.use(createError);
-app.use(errorRouter);
+module.exports = app;
